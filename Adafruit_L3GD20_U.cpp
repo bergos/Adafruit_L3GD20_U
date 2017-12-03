@@ -36,7 +36,7 @@
 /**************************************************************************/
 void Adafruit_L3GD20_Unified::write8(byte reg, byte value)
 {
-  Wire.beginTransmission(L3GD20_ADDRESS);
+  Wire.beginTransmission(_address);
   #if ARDUINO >= 100
     Wire.write((uint8_t)reg);
     Wire.write((uint8_t)value);
@@ -56,14 +56,14 @@ byte Adafruit_L3GD20_Unified::read8(byte reg)
 {
   byte value;
 
-  Wire.beginTransmission((byte)L3GD20_ADDRESS);
+  Wire.beginTransmission(_address);
   #if ARDUINO >= 100
     Wire.write((uint8_t)reg);
   #else
     Wire.send(reg);
   #endif
   Wire.endTransmission();
-  Wire.requestFrom((byte)L3GD20_ADDRESS, (byte)1);
+  Wire.requestFrom(_address, (byte)1);
   while (!Wire.available()); // Wait for data to arrive.
   #if ARDUINO >= 100
     value = Wire.read();
@@ -98,13 +98,16 @@ Adafruit_L3GD20_Unified::Adafruit_L3GD20_Unified(int32_t sensorID) {
     @brief  Setups the HW
 */
 /**************************************************************************/
-bool Adafruit_L3GD20_Unified::begin(gyroRange_t rng)
+bool Adafruit_L3GD20_Unified::begin(gyroRange_t rng, byte addr)
 {
   /* Enable I2C */
   Wire.begin();
 
   /* Set the range the an appropriate value */
   _range = rng;
+
+  /* Set the I2C address */
+  _address = addr;
 
   /* Clear the raw sensor data */
   raw.x = 0;
@@ -115,7 +118,7 @@ bool Adafruit_L3GD20_Unified::begin(gyroRange_t rng)
      for correct address and that the IC is properly connected */
   uint8_t id = read8(GYRO_REGISTER_WHO_AM_I);
   //Serial.println(id, HEX);
-  if ((id != L3GD20_ID) && (id != L3GD20H_ID))
+  if ((id != L3G4200D_ID) && (id != L3GD20_ID) && (id != L3GD20H_ID))
   {
     return false;
   }
@@ -242,7 +245,7 @@ bool Adafruit_L3GD20_Unified::getEvent(sensors_event_t* event)
     event->timestamp = millis();
 
     /* Read 6 bytes from the sensor */
-    Wire.beginTransmission((byte)L3GD20_ADDRESS);
+    Wire.beginTransmission(_address);
     #if ARDUINO >= 100
       Wire.write(GYRO_REGISTER_OUT_X_L | 0x80);
     #else
@@ -252,7 +255,7 @@ bool Adafruit_L3GD20_Unified::getEvent(sensors_event_t* event)
         // Error. Retry.
         continue;
     }
-    Wire.requestFrom((byte)L3GD20_ADDRESS, (byte)6);
+    Wire.requestFrom(_address, (byte)6);
 
     #if ARDUINO >= 100
       uint8_t xlo = Wire.read();

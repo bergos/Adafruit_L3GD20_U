@@ -29,8 +29,10 @@
 /*=========================================================================
     I2C ADDRESS/BITS AND SETTINGS
     -----------------------------------------------------------------------*/
+    #define L3G4200D_ADDRESS         (0x69)        // 1101001
     #define L3GD20_ADDRESS           (0x6B)        // 1101011
     #define L3GD20_POLL_TIMEOUT      (100)         // Maximum number of read attempts
+    #define L3G4200D_ID              (0xD3)
     #define L3GD20_ID                (0xD4)
     #define L3GD20H_ID               (0xD7)
     // Sesitivity values from the mechanical characteristics in the datasheet.
@@ -100,7 +102,7 @@ class Adafruit_L3GD20_Unified : public Adafruit_Sensor
   public:
     Adafruit_L3GD20_Unified(int32_t sensorID = -1);
 
-    bool begin           ( gyroRange_t rng = GYRO_RANGE_250DPS );
+    bool begin           ( gyroRange_t rng = GYRO_RANGE_250DPS, byte addr=L3GD20_ADDRESS );
     void enableAutoRange ( bool enabled );
     bool getEvent        ( sensors_event_t* );
     void getSensor       ( sensor_t* );
@@ -110,6 +112,7 @@ class Adafruit_L3GD20_Unified : public Adafruit_Sensor
   private:
     void        write8  ( byte reg, byte value );
     byte        read8   ( byte reg );
+    byte        _address;
     gyroRange_t _range;
     int32_t     _sensorID;
     bool        _autoRangeEnabled;
